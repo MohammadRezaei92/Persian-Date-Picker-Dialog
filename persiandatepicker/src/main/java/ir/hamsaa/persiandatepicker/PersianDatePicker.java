@@ -11,11 +11,13 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
+
+import com.shawnlin.numberpicker.NumberPicker;
 
 import java.util.Date;
 
@@ -23,10 +25,9 @@ import ir.hamsaa.persiandatepicker.util.PersianCalendar;
 import ir.hamsaa.persiandatepicker.util.PersianCalendarConstants;
 import ir.hamsaa.persiandatepicker.util.PersianCalendarUtils;
 import ir.hamsaa.persiandatepicker.util.PersianHelper;
-import ir.hamsaa.persiandatepicker.view.PersianNumberPicker;
 
 
-class PersianDatePicker extends LinearLayout {
+public class PersianDatePicker extends LinearLayout {
 
     private PersianCalendar pCalendar;
     private int selectedMonth;
@@ -34,9 +35,9 @@ class PersianDatePicker extends LinearLayout {
     private int selectedDay;
     private boolean displayMonthNames;
     private OnDateChangedListener mListener;
-    private PersianNumberPicker yearNumberPicker;
-    private PersianNumberPicker monthNumberPicker;
-    private PersianNumberPicker dayNumberPicker;
+    private NumberPicker yearNumberPicker;
+    private NumberPicker monthNumberPicker;
+    private NumberPicker dayNumberPicker;
 
     private int minYear;
     private int maxYear;
@@ -46,6 +47,69 @@ class PersianDatePicker extends LinearLayout {
     private Typeface typeFace;
     private int dividerColor;
     private int yearRange;
+    NumberPicker.OnValueChangeListener dateChangeListener = new NumberPicker.OnValueChangeListener() {
+
+        @Override
+        public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+            int year = yearNumberPicker.getValue();
+            boolean isLeapYear = PersianCalendarUtils.isPersianLeapYear(year);
+
+            int month = monthNumberPicker.getValue();
+            int day = dayNumberPicker.getValue();
+
+            if (month < 7) {
+                dayNumberPicker.setMinValue(1);
+                dayNumberPicker.setMaxValue(31);
+            } else if (month < 12) {
+                if (day == 31) {
+                    dayNumberPicker.setValue(30);
+                }
+                dayNumberPicker.setMinValue(1);
+                dayNumberPicker.setMaxValue(30);
+            } else if (month == 12) {
+                if (isLeapYear) {
+                    if (day == 31) {
+                        dayNumberPicker.setValue(30);
+                    }
+                    dayNumberPicker.setMinValue(1);
+                    dayNumberPicker.setMaxValue(30);
+                } else {
+                    if (day > 29) {
+                        dayNumberPicker.setValue(29);
+                    }
+                    dayNumberPicker.setMinValue(1);
+                    dayNumberPicker.setMaxValue(29);
+                }
+            }
+
+            PersianCalendar displayPersianDate = new PersianCalendar();
+            displayPersianDate.setPersianDate(
+                    yearNumberPicker.getValue(),
+                    monthNumberPicker.getValue(),
+                    dayNumberPicker.getValue()
+            );
+
+            pCalendar = displayPersianDate;
+
+            // Set description
+            if (displayDescription) {
+                descriptionTextView.setText(getDisplayPersianDate().getPersianLongDate());
+            }
+
+            if (mListener != null) {
+                mListener.onDateChanged(yearNumberPicker.getValue(), monthNumberPicker.getValue(),
+                        dayNumberPicker.getValue());
+            }
+
+
+        }
+
+    };
+    private View SelectedAreaBackground;
+    private float pickerTextSize;
+    private int pickerTextColor;
+    private int pickerSelectedTextColor;
+    private float pickerSelectedTextSize;
 
     public PersianDatePicker(Context context) {
         this(context, null, -1);
@@ -55,37 +119,7 @@ class PersianDatePicker extends LinearLayout {
         this(context, attrs, -1);
     }
 
-    private void updateVariablesFromXml(Context context, AttributeSet attrs) {
-
-        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.PersianDatePicker, 0, 0);
-        yearRange = a.getInteger(R.styleable.PersianDatePicker_yearRange, 10);
-        /*
-         * Initializing yearNumberPicker min and max values If minYear and
-         * maxYear attributes are not set, use (current year - 10) as min and
-         * (current year + 10) as max.
-         */
-        minYear = a.getInt(R.styleable.PersianDatePicker_minYear, pCalendar.getPersianYear() - yearRange);
-        maxYear = a.getInt(R.styleable.PersianDatePicker_maxYear, pCalendar.getPersianYear() + yearRange);
-        displayMonthNames = a.getBoolean(R.styleable.PersianDatePicker_displayMonthNames, false);
-        /*
-         * displayDescription
-         */
-        displayDescription = a.getBoolean(R.styleable.PersianDatePicker_displayDescription, false);
-        selectedDay = a.getInteger(R.styleable.PersianDatePicker_selectedDay, pCalendar.getPersianDay());
-        selectedYear = a.getInt(R.styleable.PersianDatePicker_selectedYear, pCalendar.getPersianYear());
-        selectedMonth = a.getInteger(R.styleable.PersianDatePicker_selectedMonth, pCalendar.getPersianMonth());
-
-        // if you pass selected year before min year, then we need to push min year to before that
-        if (minYear > selectedYear) {
-            minYear = selectedYear - yearRange;
-        }
-
-        if (maxYear < selectedYear) {
-            maxYear = selectedYear + yearRange;
-        }
-
-        a.recycle();
-    }
+    private int pickerSelectedAreaBackground;
 
     public PersianDatePicker(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -98,6 +132,7 @@ class PersianDatePicker extends LinearLayout {
         monthNumberPicker = view.findViewById(R.id.monthNumberPicker);
         dayNumberPicker = view.findViewById(R.id.dayNumberPicker);
         descriptionTextView = view.findViewById(R.id.descriptionTextView);
+        SelectedAreaBackground = view.findViewById(R.id.selectedAreaBackground);
 
 
         yearNumberPicker.setFormatter(new NumberPicker.Formatter() {
@@ -184,13 +219,56 @@ class PersianDatePicker extends LinearLayout {
         }
     }
 
+    private void updateVariablesFromXml(Context context, AttributeSet attrs) {
+
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.PersianDatePicker, 0, 0);
+        yearRange = a.getInteger(R.styleable.PersianDatePicker_yearRange, 10);
+        /*
+         * Initializing yearNumberPicker min and max values If minYear and
+         * maxYear attributes are not set, use (current year - 10) as min and
+         * (current year + 10) as max.
+         */
+        minYear = a.getInt(R.styleable.PersianDatePicker_minYear, pCalendar.getPersianYear() - yearRange);
+        maxYear = a.getInt(R.styleable.PersianDatePicker_maxYear, pCalendar.getPersianYear() + yearRange);
+        displayMonthNames = a.getBoolean(R.styleable.PersianDatePicker_displayMonthNames, false);
+        /*
+         * displayDescription
+         */
+        displayDescription = a.getBoolean(R.styleable.PersianDatePicker_displayDescription, false);
+        selectedDay = a.getInteger(R.styleable.PersianDatePicker_selectedDay, pCalendar.getPersianDay());
+        selectedYear = a.getInt(R.styleable.PersianDatePicker_selectedYear, pCalendar.getPersianYear());
+        selectedMonth = a.getInteger(R.styleable.PersianDatePicker_selectedMonth, pCalendar.getPersianMonth());
+
+        /*
+         * styles
+         */
+        pickerTextSize = a.getDimension(R.styleable.PersianDatePicker_pickerTextSize, pxToSp(dayNumberPicker.getTextSize()));
+        pickerTextColor = a.getColor(R.styleable.PersianDatePicker_pickerTextColor, dayNumberPicker.getTextColor());
+        pickerSelectedTextColor = a.getColor(R.styleable.PersianDatePicker_pickerSelectedTextColor, dayNumberPicker.getSelectedTextColor());
+        pickerSelectedTextSize = a.getDimension(R.styleable.PersianDatePicker_pickerSelectedTextSize, dayNumberPicker.getSelectedTextSize());
+        pickerSelectedAreaBackground = a.getInt(R.styleable.PersianDatePicker_pickerSelectedAreaBackground, 0);
+
+        // if you pass selected year before min year, then we need to push min year to before that
+        if (minYear > selectedYear) {
+            minYear = selectedYear - yearRange;
+        }
+
+        if (maxYear < selectedYear) {
+            maxYear = selectedYear + yearRange;
+        }
+
+        a.recycle();
+    }
 
     private void updateViewData() {
 
         if (typeFace != null) {
-            yearNumberPicker.setTypeFace(typeFace);
-            monthNumberPicker.setTypeFace(typeFace);
-            dayNumberPicker.setTypeFace(typeFace);
+            yearNumberPicker.setTypeface(typeFace);
+            yearNumberPicker.setSelectedTypeface(typeFace);
+            monthNumberPicker.setTypeface(typeFace);
+            monthNumberPicker.setSelectedTypeface(typeFace);
+            dayNumberPicker.setTypeface(typeFace);
+            dayNumberPicker.setSelectedTypeface(typeFace);
         }
 
         if (dividerColor > 0) {
@@ -255,68 +333,75 @@ class PersianDatePicker extends LinearLayout {
             descriptionTextView.setVisibility(View.VISIBLE);
             descriptionTextView.setText(getDisplayPersianDate().getPersianLongDate());
         }
+
+
+        SelectedAreaBackground.setBackgroundResource(pickerSelectedAreaBackground);
+
+        yearNumberPicker.setTextSize(pickerTextSize);
+        monthNumberPicker.setTextSize(pickerTextSize);
+        dayNumberPicker.setTextSize(pickerTextSize);
+
+        yearNumberPicker.setSelectedTextSize(pickerSelectedTextSize);
+        monthNumberPicker.setSelectedTextSize(pickerSelectedTextSize);
+        dayNumberPicker.setSelectedTextSize(pickerSelectedTextSize);
+
+        yearNumberPicker.setTextColor(pickerTextColor);
+        monthNumberPicker.setTextColor(pickerTextColor);
+        dayNumberPicker.setTextColor(pickerTextColor);
+
+        yearNumberPicker.setSelectedTextColor(pickerSelectedTextColor);
+        monthNumberPicker.setSelectedTextColor(pickerSelectedTextColor);
+        dayNumberPicker.setSelectedTextColor(pickerSelectedTextColor);
+
     }
-
-    NumberPicker.OnValueChangeListener dateChangeListener = new NumberPicker.OnValueChangeListener() {
-
-        @Override
-        public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-            int year = yearNumberPicker.getValue();
-            boolean isLeapYear = PersianCalendarUtils.isPersianLeapYear(year);
-
-            int month = monthNumberPicker.getValue();
-            int day = dayNumberPicker.getValue();
-
-            if (month < 7) {
-                dayNumberPicker.setMinValue(1);
-                dayNumberPicker.setMaxValue(31);
-            } else if (month < 12) {
-                if (day == 31) {
-                    dayNumberPicker.setValue(30);
-                }
-                dayNumberPicker.setMinValue(1);
-                dayNumberPicker.setMaxValue(30);
-            } else if (month == 12) {
-                if (isLeapYear) {
-                    if (day == 31) {
-                        dayNumberPicker.setValue(30);
-                    }
-                    dayNumberPicker.setMinValue(1);
-                    dayNumberPicker.setMaxValue(30);
-                } else {
-                    if (day > 29) {
-                        dayNumberPicker.setValue(29);
-                    }
-                    dayNumberPicker.setMinValue(1);
-                    dayNumberPicker.setMaxValue(29);
-                }
-            }
-
-            PersianCalendar displayPersianDate = new PersianCalendar();
-            displayPersianDate.setPersianDate(
-                    yearNumberPicker.getValue(),
-                    monthNumberPicker.getValue(),
-                    dayNumberPicker.getValue()
-            );
-
-            pCalendar = displayPersianDate;
-
-            // Set description
-            if (displayDescription) {
-                descriptionTextView.setText(getDisplayPersianDate().getPersianLongDate());
-            }
-
-            if (mListener != null) {
-                mListener.onDateChanged(yearNumberPicker.getValue(), monthNumberPicker.getValue(),
-                        dayNumberPicker.getValue());
-            }
-
-        }
-
-    };
 
     public void setOnDateChangedListener(OnDateChangedListener onDateChangedListener) {
         mListener = onDateChangedListener;
+    }
+
+    public float getPickerTextSize() {
+        return pickerTextSize;
+    }
+
+    public void setPickerTextSize(float pickerTextSize) {
+        this.pickerTextSize = pickerTextSize;
+        updateViewData();
+    }
+
+    public int getPickerTextColor() {
+        return pickerTextColor;
+    }
+
+    public void setPickerTextColor(@ColorRes int pickerTextColor) {
+        this.pickerTextColor = pickerTextColor;
+        updateViewData();
+    }
+
+    public int getPickerSelectedTextColor() {
+        return pickerSelectedTextColor;
+    }
+
+    public void setPickerSelectedTextColor(@ColorRes int pickerSelectedTextColor) {
+        this.pickerSelectedTextColor = pickerSelectedTextColor;
+        updateViewData();
+    }
+
+    public float getPickerSelectedTextSize() {
+        return pickerSelectedTextSize;
+    }
+
+    public void setPickerSelectedTextSize(float pickerSelectedTextSize) {
+        this.pickerSelectedTextSize = pickerSelectedTextSize;
+        updateViewData();
+    }
+
+    public int getPickerSelectedAreaBackground() {
+        return pickerSelectedAreaBackground;
+    }
+
+    public void setPickerSelectedAreaBackground(int pickerSelectedAreaBackground) {
+        this.pickerSelectedAreaBackground = pickerSelectedAreaBackground;
+        updateViewData();
     }
 
     /**
@@ -452,6 +537,10 @@ class PersianDatePicker extends LinearLayout {
                 return new SavedState[size];
             }
         };
+    }
+
+    private float pxToSp(float px) {
+        return px / getResources().getDisplayMetrics().scaledDensity;
     }
 
 }

@@ -10,6 +10,11 @@
         <attr name="displayMonthNames" format="boolean" />
         <attr name="yearRange" format="integer" />
         <attr name="displayDescription" format="boolean" />
+        <attr name="pickerSelectedAreaBackground" format="integer" />
+        <attr name="pickerTextSize" format="dimension" />
+        <attr name="pickerTextColor" format="color" />
+        <attr name="pickerSelectedTextColor" format="color" />
+        <attr name="pickerSelectedTextSize" format="dimension" />
     </declare-styleable>
     <attr name="numberPickerTheme" format="reference"/>
 

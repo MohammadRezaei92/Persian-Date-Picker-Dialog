@@ -1,55 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layoutDirection="ltr"
-    android:orientation="vertical"
-    tools:ignore="RtlHardcoded,UnusedAttribute">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layoutDirection="ltr"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        tools:ignore="RtlHardcoded,UnusedAttribute">
 
-        <ir.hamsaa.persiandatepicker.view.PersianNumberPicker
-            android:id="@+id/yearNumberPicker"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginLeft="4dp"
-            android:layout_marginEnd="2dp"
-            android:layout_marginRight="2dp"
-            android:layout_weight="1"
-            android:background="#fff" />
+            android:layoutDirection="ltr"
+            android:orientation="horizontal">
 
-        <ir.hamsaa.persiandatepicker.view.PersianNumberPicker
-            android:id="@+id/monthNumberPicker"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="2dp"
-            android:layout_marginRight="2dp"
-            android:layout_weight="1"
-            android:background="#fff" />
+            <com.shawnlin.numberpicker.NumberPicker
+                android:id="@+id/yearNumberPicker"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginEnd="2dp"
+                android:layout_marginRight="2dp"
+                android:layout_weight="1"
+                android:background="#fff"
+                app:np_dividerThickness="0dp" />
 
-        <ir.hamsaa.persiandatepicker.view.PersianNumberPicker
-            android:id="@+id/dayNumberPicker"
-            android:layout_width="0dp"
+            <com.shawnlin.numberpicker.NumberPicker
+                android:id="@+id/monthNumberPicker"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="2dp"
+                android:layout_marginRight="2dp"
+                android:layout_weight="1"
+                android:background="#fff"
+                app:np_dividerThickness="0dp" />
+
+            <com.shawnlin.numberpicker.NumberPicker
+                android:id="@+id/dayNumberPicker"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:layout_marginLeft="2dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_weight="1"
+                android:background="#fff"
+                app:np_dividerThickness="0dp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/descriptionTextView"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="2dp"
-            android:layout_marginLeft="2dp"
-            android:layout_marginEnd="4dp"
-            android:layout_marginRight="4dp"
-            android:layout_weight="1"
-            android:background="#fff" />
+            android:layout_gravity="center_horizontal"
+            android:visibility="gone" />
+
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/descriptionTextView"
+    <View
+        android:id="@+id/selectedAreaBackground"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:visibility="gone" />
-
-</LinearLayout>
+        android:layout_height="65dp"
+        android:layout_gravity="center" />
+</FrameLayout>
