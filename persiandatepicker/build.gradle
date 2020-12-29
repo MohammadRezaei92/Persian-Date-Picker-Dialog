@@ -21,5 +21,5 @@ android {
 dependencies {
     api 'androidx.appcompat:appcompat:1.2.0'
     api 'com.google.android.material:material:1.3.0-beta01'
-    implementation 'com.shawnlin:number-picker:2.4.11'
+    api 'com.shawnlin:number-picker:2.4.11'
 }

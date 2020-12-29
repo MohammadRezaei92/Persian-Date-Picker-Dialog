@@ -110,6 +110,7 @@ public class PersianDatePicker extends LinearLayout {
     private int pickerTextColor;
     private int pickerSelectedTextColor;
     private float pickerSelectedTextSize;
+    private int pickerSelectedAreaBackground;
 
     public PersianDatePicker(Context context) {
         this(context, null, -1);
@@ -118,8 +119,6 @@ public class PersianDatePicker extends LinearLayout {
     public PersianDatePicker(Context context, AttributeSet attrs) {
         this(context, attrs, -1);
     }
-
-    private int pickerSelectedAreaBackground;
 
     public PersianDatePicker(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -246,7 +245,7 @@ public class PersianDatePicker extends LinearLayout {
         pickerTextColor = a.getColor(R.styleable.PersianDatePicker_pickerTextColor, dayNumberPicker.getTextColor());
         pickerSelectedTextColor = a.getColor(R.styleable.PersianDatePicker_pickerSelectedTextColor, dayNumberPicker.getSelectedTextColor());
         pickerSelectedTextSize = a.getDimension(R.styleable.PersianDatePicker_pickerSelectedTextSize, dayNumberPicker.getSelectedTextSize());
-        pickerSelectedAreaBackground = a.getInt(R.styleable.PersianDatePicker_pickerSelectedAreaBackground, 0);
+        pickerSelectedAreaBackground = a.getResourceId(R.styleable.PersianDatePicker_pickerSelectedAreaBackground, 0);
 
         // if you pass selected year before min year, then we need to push min year to before that
         if (minYear > selectedYear) {
